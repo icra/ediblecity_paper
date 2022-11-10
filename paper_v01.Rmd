@@ -1,20 +1,21 @@
 ---
 title: "ediblecity: an R package to model and estimate the benefits of urban agriculture"
 author:
-- Josep Pueyo-Ros [1,2,*]
-- Joaquim Comas [1,3]
-- Lluís Corominas [1,2]
+- Josep Pueyo-Ros \textsuperscript{1,2,*}
+- Joaquim Comas \textsuperscript{1,3}
+- Lluís Corominas \textsuperscript{1,2}
 output: 
   pdf_document:
     number_sections: true
     keep_tex: true
 bibliography: library.bib
 ---
-1. Catalan Institute for Water Research
-2. University of Girona
-3. LEQUIA, University of Girona
 
-\* jpueyo@icra.cat
+1.  Catalan Institute for Water Research
+2.  University of Girona
+3.  LEQUIA, University of Girona
+
+ \* [jpueyo\@icra.cat](mailto:jpueyo@icra.cat){.email}
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -25,9 +26,16 @@ library(ediblecity)
 theme_set(theme_classic)
 ```
 
-## Abstract {-}
+## Abstract {.unnumbered}
 
 # Introduction
+
+Urban agriculture is gaining attraction as one of the pillars of the urban ecological transition [@Saumel2019]. Likewise, urban agriculture might have a key role ensuring food security in an urbanized planet [@Barthel2015]. As a consequence, some research has paid attention on the actual or potential food production of urban agriculture [@Grafius2020; @Richardson2016]. However, some others authors argued that the importance of urban agriculture does not reside in their ability to produce food but in the social benefits it provides, such as public health [@Soga2017] and social cohesion [@Saumel2019]. Moreover, other authors stated that urban agriculture can provide environmental benefits as well, such climate regulation [@Clinton2018] or water runoff prevention [@Gittleman2017].
+
+However, there is a lack of systematic quantification of the benefits provided by urban agriculture [@LANGEMEYER2021104055]. For instance, there is no clear evidence to what extent urban agriculture could contribute to reduce the urban heat island [@Lin2015] or to a greener economy [@Saumel2019]. However, most studies have been focused on a single initiative and one benefit [@Artmann2018].
+
+Therefore, decision-makers, who are responsible of leading the urban transitions to more sustainable and resilient cities, are orphan of evidence in how to implement urban agriculture to maximize its impact on sustainability. Yet, several studies provided some insights that can guide the implementation of urban agriculture. For instance, some models assist planners in rainwater harvesting [@Gittleman2017; @Lupia2017]
+@Gomez-Villarino2021 developed guidelines to maximize ecosystem services through urban agriculture.
 
 # Methods
 
@@ -35,4 +43,4 @@ theme_set(theme_classic)
 
 # Conclusion
 
-# References {-}
+# References {.unnumbered}
