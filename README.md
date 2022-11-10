@@ -6,6 +6,10 @@
 
 The goal of ediblecity_paper is to create a scientific paper to present the [ediblecity package](https://github.com/icra/ediblecity).
 
-![](assets/edicitnet.jpg){width="137"}
+<p style="align:center">
 
-![EC logo!](assets/EC_logo.png){width="47"} This research was funded by Edicitnet project (grant agreement nº 776665)
+<img src="assets/edicitnet.jpg" style="width:130px"/>
+
+</p>
+
+<img src="assets/EC_logo.png" style="width:40px"/> This research was funded by Edicitnet project (grant agreement nº 776665)
