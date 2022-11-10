@@ -22,6 +22,11 @@ knitr::opts_chunk$set(echo = FALSE)
 library(ggplot2)
 library(dplyr)
 library(ediblecity)
+library(knitr)
+library(sf)
+
+table <- 0
+figure <- 0
 
 theme_set(theme_classic)
 ```
@@ -34,10 +39,98 @@ Urban agriculture is gaining attraction as one of the pillars of the urban ecolo
 
 However, there is a lack of systematic quantification of the benefits provided by urban agriculture [@LANGEMEYER2021104055]. For instance, there is no clear evidence to what extent urban agriculture could contribute to reduce the urban heat island [@Lin2015] or to a greener economy [@Saumel2019]. However, most studies have been focused on a single initiative and one benefit [@Artmann2018].
 
-Therefore, decision-makers, who are responsible of leading the urban transitions to more sustainable and resilient cities, are orphan of evidence in how to implement urban agriculture to maximize its impact on sustainability. Yet, several studies provided some insights that can guide the implementation of urban agriculture. For instance, some models assist planners in rainwater harvesting [@Gittleman2017; @Lupia2017]
-@Gomez-Villarino2021 developed guidelines to maximize ecosystem services through urban agriculture.
+Therefore, decision-makers, who are responsible of leading the urban transitions to more sustainable and resilient cities, are orphan of evidence in how to implement urban agriculture to maximize its impact on sustainability. Yet, several studies provided some insights that can guide the implementation of urban agriculture. For instance, some models assist planners in rainwater harvesting [@Gittleman2017; @Lupia2017]. Broader, @Gomez-Villarino2021 developed guidelines to maximize ecosystem services through urban agriculture. And, as expected, many models have been developed to quantify food production and food security provided by urban agriculture [@Grafius2020; @Grewal2012; @Hsieh2017; @MacRae2010].
+
+Hence, our goal is to provide a model to estimate multiple benefits of urban agriculture that help decision-makers to strategically implement urban agriculture solutions. We developed the estimations for eight indicators and a functionality to create scenarios of urban agriculture based on the proportion of elements to be transformed to urban agriculture and on which elements will be transformed. In the methods, we present the main functionalities of the `ediblecity` package and then we apply those to an example in a neighborhood of Girona (Spain).
 
 # Methods
+
+## Urban representation of the city of interest
+
+The `ediblecity` package provide 8 functions to estimate 8 different indicators and a function to create scenarios. It takes as a basis a spatial representation of a city (or a part of a city) as a GIS layer. This representation must have one attribute indicating the land uses of the city (aka functions), such as gardens, streets, rooftops, etc. Some indicators require specific information to be included in the representation. These is explained in each indicator's section.
+
+```{r}
+color_names <- sort(unique(city_example$Function))
+colors <- c("Brown", "Lightgreen", "chartreuse4", "Grey20", 
+            "Black", "chocolate2", "Yellow", "Lightblue",
+            "Red", "Grey50", "Darkgreen", "Yellow"
+            )
+names(colors) <- color_names
+
+theme_set(theme_void())
+
+city_example |> 
+  ggplot()+
+  geom_sf(aes(fill=Function))+
+  scale_fill_manual(values = colors)
+
+theme_set(theme_classic())
+figure <- figure + 1
+```
+
+Figure `r figure`: The urban representation included in the `ediblecity` package as example.
+
+
+The package includes the representation of Sant Narcís, a neighbourhood of Girona (Spain) as an example of an urban representation (figure `r figure`). This example can help the users to create the representation of their cities of interest. In `r table = table+1; paste("table", table)` a sample with one element of each type is shown. The representation is provided as an `sf` object, which is a class for spatial data in R implemented by package `sf` [@Pebesma2018]
+
+Table `r table`: Structure of the urban representation example"
+
+```{r}
+tribble(
+  ~Column, ~Description,
+  "Function", "A category representing the urban elements",
+  "Function_verbose", "A more detailed category for the element, for example, if it is residential",
+  "floors", "The number of floors of the element, 0 for non-built",
+  "area", "The surface of the element",
+  "flat_area", "The surface of the element that is flat (slope < 5º)",
+  "edible_area", "The surface that is used to grow edible plants. Only applicable to urban agriculture solutions"
+) |> 
+  kable()
+```
+
+Along with the example for a urban representation, the `ediblecity` package also includes a `data.frame` with the general attributes of each green typology in the urban representation used to estimate the indicators (table `r table = table+1; table`). However, the user can provide is own attributes to estimate any indicator.
+
+Table `r table`: General attributes of the elements of urban green used to estimate the indicators.
+
+```{r}
+
+stop("Explicar que hi ha altres camps utuilitzats internament i descriure els de la taula")
+
+city_functions |>
+  select(-starts_with("...")) |> 
+  select(-edible, -public, -jobs, -volunteers, -location) |>
+  select(-starts_with("water")) |> 
+  kable()
+```
+
+
+## Indicators estimated
+
+### Urban heat island
+
+The urban heat island is a measure of how urban agriculture can contribute to climate change adaptation [@Langemeyer2021]. The indicator follows the equation developed by @Theeuwes2017, which was validated in 14 cities. It calculates the difference in air temperature between the urban street canyon and the rural environment. To calculate this indicator, the user must provide a raster representing the sky view factor (SVF). SAGA, a collection of open-source algorithms for geocomputation, provides an algorithm to calculate this [@Conrad2008].
+
+\begin{align}
+UHI = \frac{1}{N}\sum_{i=1}^{N}{(2 - SVF_i - Fveg_i) · \sqrt[4]{\frac{\frac{Q_ql}{C_air · P_air} · \Delta{T^3}}{U}}}
+\end{align}
+
+where $Fveg$ is the percentage of vegetation in cell $i$; $Q_ql$ is the daily average global radiation; $C_air$ is the air heat capacity; $P_air$ is air density; $\Delta{T}$ is the difference between the maximum and minimum daily average temperatures; and $U$ is the daily average wind speed.
+
+The indicator to estimate the urban heat island is implemented by the package under the function `UHI`. The user must provide the urban representation (`x`) and the raster with SVF values (`SVF`). The `green_df` argument is a `data.frame` with the proportion of green of each `Function` in the urban representation.
+
+```{r, echo=TRUE, eval=FALSE}
+
+UHI()
+
+```
+
+
+
+
+
+
+
+
 
 # Use cases
 
