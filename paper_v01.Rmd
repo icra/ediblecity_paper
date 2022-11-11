@@ -27,8 +27,8 @@ library(sf)
 
 table <- 0
 figure <- 0
+snippet <- 0
 
-theme_set(theme_classic)
 ```
 
 ## Abstract {.unnumbered}
@@ -57,14 +57,15 @@ colors <- c("Brown", "Lightgreen", "chartreuse4", "Grey20",
             )
 names(colors) <- color_names
 
-theme_set(theme_void())
+theme_set(theme_classic())
 
 city_example |> 
   ggplot()+
-  geom_sf(aes(fill=Function))+
-  scale_fill_manual(values = colors)
+  geom_sf(aes(fill=Function), color="white", linewidth = 0.1)+
+  scale_fill_manual(values = colors)+
+  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5),
+        axis.text = element_text(size=6))
 
-theme_set(theme_classic())
 figure <- figure + 1
 ```
 
@@ -88,13 +89,13 @@ tribble(
   kable()
 ```
 
-Along with the example for a urban representation, the `ediblecity` package also includes a `data.frame` with the general attributes of each green typology in the urban representation used to estimate the indicators (table `r table = table+1; table`). However, the user can provide is own attributes to estimate any indicator.
+Along with the example for a urban representation, the `ediblecity` package also includes a `data.frame` with the general attributes of each green typology in the urban representation used to estimate the indicators (table `r table = table+1; table`). However, the user can provide their own attributes to estimate any indicator. In `city_functions` there are other columns not shown in table `r table`, they are logical variables (i.e. TRUE/FALSE) used internally by the package to select urban agriculture elements.
+
+`pGreen` is the proportion of green of the urban element. In urban agriculture solutions, this is overriden by the attribute `edible_area`. The following attributes come in pairs. This is to consider uncertainty in the estimations. The functions use a random value within the range provided by the pair of values for each element in the city. `no2_seq` is the capacity of the element to capture NO~2~ in gr/s. `food` is the food productivity in kg/m^2^ and `CN` is ther curve number, used to calculate infiltration rates [@Cronshey1985].
 
 Table `r table`: General attributes of the elements of urban green used to estimate the indicators.
 
 ```{r}
-
-stop("Explicar que hi ha altres camps utuilitzats internament i descriure els de la taula")
 
 city_functions |>
   select(-starts_with("...")) |> 
@@ -111,23 +112,129 @@ city_functions |>
 The urban heat island is a measure of how urban agriculture can contribute to climate change adaptation [@Langemeyer2021]. The indicator follows the equation developed by @Theeuwes2017, which was validated in 14 cities. It calculates the difference in air temperature between the urban street canyon and the rural environment. To calculate this indicator, the user must provide a raster representing the sky view factor (SVF). SAGA, a collection of open-source algorithms for geocomputation, provides an algorithm to calculate this [@Conrad2008].
 
 \begin{align}
-UHI = \frac{1}{N}\sum_{i=1}^{N}{(2 - SVF_i - Fveg_i) · \sqrt[4]{\frac{\frac{Q_ql}{C_air · P_air} · \Delta{T^3}}{U}}}
+UHI = \frac{1}{N}\sum_{i=1}^{N}{(2 - SVF_i - Fveg_i) \times \sqrt[4]{\frac{\frac{Q_ql}{C_air \times P_air} \times \Delta{T^3}}{U}}}
 \end{align}
 
 where $Fveg$ is the percentage of vegetation in cell $i$; $Q_ql$ is the daily average global radiation; $C_air$ is the air heat capacity; $P_air$ is air density; $\Delta{T}$ is the difference between the maximum and minimum daily average temperatures; and $U$ is the daily average wind speed.
 
-The indicator to estimate the urban heat island is implemented by the package under the function `UHI`. The user must provide the urban representation (`x`) and the raster with SVF values (`SVF`). The `green_df` argument is a `data.frame` with the proportion of green of each `Function` in the urban representation.
+The indicator to estimate the urban heat island is implemented by the package under the function `UHI`. The user must provide the urban representation (`x`) and the raster with SVF values (`SVF`). The `green_df` argument is a `data.frame` with the proportion of green of each `Function` in the urban representation. All the meteorological arguments are provided by default, based on the example provided (Mediterranean climate). However, the user can override them to provide values of their city of interest.
 
-```{r, echo=TRUE, eval=FALSE}
+The function returns by default a summary of statistics of the UHI in `x`. If the argument `return_raster` is set to `TRUE`, the function returns a raster as `stars` object [@Pebesma2021] with the UHI values. If `verbose` is set to `TRUE`, then the function returns a vector (i.e. an array) with the UHI in each cell. Both use the same resolution than `SVF`.
 
-UHI()
+Code snippet `r snippet = snippet+1; snippet`: Function and argumentd to estimate urban heat island.
+
+```{r uhi_demo, echo=TRUE, eval=FALSE}
+
+UHI(
+  x,
+  SVF,
+  green_df = NULL,
+  Qql = 6.11,
+  Cair = 1007,
+  Pair = 1.14,
+  Tmax = 30.8,
+  Tmin = 20,
+  windspeed = 2.77,
+  return_raster = FALSE,
+  verbose = FALSE
+)
 
 ```
 
+### Runoff prevention
+
+Surface runoff is the flow of water occurring on the ground surface when excess rainwater can no longer sufficiently rapidly infiltrate in the soil. Hence, runoff mitigation contributes to climate resilience since rain events will increase due to climate change [@Shukla2019]. The indicator measures the runoff in the city after a specific 24-hours rain event as well as the amount of rainwater harvested by harvesting systems. We departed from the model developed by the Soil Conservation Service (USDA), known as SCS runoff curve number method [@Cronshey1985].
+
+\begin{align}
+Q = \frac{(P - I_a)^2}{(P - I_a) + S}
+\end{align}
+
+where $P$ is the rainfall volume in mm; $I_a$ is the initial abstraction (all losses before runoff begins); and $S$ is the potential soil moisture retention, which is a function of the curve number. The SCS generalizes $I_a$ as $0.2SS$, we modified this generalization to include the rainwater harvested:
+
+\begin{align}
+I_a = 0.2S + \sum_{i=1}^{N}{min\{Rh, Ws\}_i}
+\end{align}
+
+where $Rh$ is the potnetial water harvested by the element $i$, calculated as the amount of water fallen on the surface of adjacent higher buildings that are not used for gardening (in litres); $Ws$ is the water storage capacity of the element $i$ in terms of tank volume (imn litres). From both, the minimum is used to calculate $I_a$.
+
+The `runoff_prev` function estimates the runoff as well as the total rainfall in `x` and the total rainwater harvested. Along with the urban representation (`x`), the user must provide a `data.frame` with the functions, two columns representing the range of curve numbers and a logical column indicating if the element has potential to harvest rainwater. The argument `rain` allows to set the rain event (in mm). The curve number of each element is randomized within this range. If `runoff_df` is not provided, `city_functions` is used instead. Following, `floors_field` is the name of attribute in `x` that specifies the number of floors of each element; `harvest_dist` is the maximum distance to consider that a building is adjacent to the element; and `tank_size` is a range for the volume of the rainwater tank (in m^3^). The volume of each tank in the city is randomized within this range.
+
+Code snippet `r snippet = snippet+1;snippet`: Function and arguments to estimate runoff prevention
+```{r runoff_demo, eval=FALSE, echo=TRUE}
+
+runoff_prev(
+  x,
+  runoff_df = NULL,
+  rain = 85,
+  floors_field = "floors",
+  harvest_dist = 10,
+  tank_size = c(0, 45)
+)
+```
+
+### Green areas accessibility
+
+This indicator calculates the distance from each home to the closest public green area and return a summary of statistics. It includes the possibility to exclude areas smaller than a threshold. The function to calculate these distances is `green_distance`. It requires, as usual, the urban representation (`x`) and a vector with all the categories considered public green areas. If it is not provided, the function uses the categories from `city_functions` where the attribute `public` is `TRUE`. The argument `residence_col` indicates the function which attribute of `x` must be used to identify the residences. Subsequently, `residences` indicates which categories of `residence_col` must be considered.  The `min_area` argument can be used to exclude smaller areas than the value passed to the function.
+
+If `percent_out` is set to `TRUE`, the function return the percentage of houses that are further than `max_dist` argument from their closest public green area (excluding areas smaller than `min_area`). The default values for `min_area` and `max_dist` follow the recommendations of the World Health Organization, who recommended that all residences should be closer than 300 meters from a public green area larger than 0.5 ha.
+
+Finally, if `verbose` argument is set to `TRUE`, a vector with all distances is returned.
+
+Code snippet `r snippet = snippet+1;snippet`: Function and arguments to calculate green accessibility
+```{r, eval=FALSE, echo=TRUE}
+
+green_distance(
+  x,
+  green_cat = NULL,
+  residence_col = "Function_verbose",
+  residences = "Residence",
+  min_area = 5000,
+  percent_out = FALSE,
+  max_dist = 300,
+  verbose = FALSE
+)
+
+```
+
+### Nitrogen dioxide sequestration
+
+Nitrogen dioxide is a good advisor of overall air quality [@Mayer1999] and one of the most concerning issues in cities, with important consequences on respiratory diseases and lung cancer [@Kampa2008]. This indicator calculates the amount of NO~2~ sequestered by urban green and urban agriculture solutions (in g/s).
+
+\begin{align}
+seq = \sum_{i=1}^{N}{a_i \times cap_i} \times 1000
+\end{align}
+
+where $a_i$ is the area (in m^2^) of the element $i$; and $cap_i$ is the capacity of element $i$ to sequester NO~2~ (in $\mu$g/s).
+
+The function to estimate the NO~2~ sequestered is `no2_seq`. It has only two arguments. The urban representation (`x`) and a `data.frame` with four columns:
+
+- `functions`: Column with the function to be considered in the calculations corresponding
+ to `Function` attribute in `x`.
+- `no2_seq1`: The low range of NO2 sequestration of each function (in $\mu$g/s/m^2^).
+- `no2_seq2`: The high range of NO2 sequestration of each function (in $\mu$g/s/m^2^).
+- `pGreen`: The proportion of green surface in each function.
 
 
+`r snippet = snippet+1`
 
+The capacity ($cap_i$ in equation `snippet`) of each element is randomized within the range provided by `no2_seq1` and `no2_seq2`. As well the area of each element is multiplied by `pGreen`. In urban agriculture solutions, the attribute `edible_area` overrides the more general `pGreen`.
 
+Code snippet `r snippet`: Function and arguments to calculate NO~2~ sequestration
+```{r no2_demo, echo=TRUE, eval=FALSE}
+
+no2_seq(x, green_df = NULL)
+
+```
+
+### Jobs created and volunteers involved
+
+There are two indicators that are closely related. They regard to hours of work. When the urban agriculture solutions are community solutions they need volunteers to be involved. On the other hand, when they are for commercial purposes, they are supposed to create jobs. Both indicators used the same equation:
+
+\begin{align}
+jobs | volunteers = \sum_{i=1}^{N}a_i \times k
+\end{align}
+
+where $a_i$ is the area in m^2^ used to grow plants (`edible_area`) in the element $i$; and $k$ is the number of jobs or volunteers by m^2^. In both functions, $k$ is randomized within a range
 
 
 
