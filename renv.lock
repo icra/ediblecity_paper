@@ -17,6 +17,32 @@
       "Hash": "b2866e62bab9378c3cc9476a1954226b",
       "Requirements": []
     },
+    "KernSmooth": {
+      "Package": "KernSmooth",
+      "Version": "2.23-20",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8dcfa99b14c296bc9f1fd64d52fd3ce7",
+      "Requirements": []
+    },
+    "MASS": {
+      "Package": "MASS",
+      "Version": "7.3-57",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "71476c1d88d1ebdf31580e5a257d5d31",
+      "Requirements": []
+    },
+    "Matrix": {
+      "Package": "Matrix",
+      "Version": "1.4-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "699c47c606293bdfbc9fd78a93c9c8fe",
+      "Requirements": [
+        "lattice"
+      ]
+    },
     "R6": {
       "Package": "R6",
       "Version": "2.5.1",
@@ -84,6 +110,16 @@
         "rlang"
       ]
     },
+    "class": {
+      "Package": "class",
+      "Version": "7.3-20",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "da09d82223e669d270e47ed24ac8686e",
+      "Requirements": [
+        "MASS"
+      ]
+    },
     "classInt": {
       "Package": "classInt",
       "Version": "0.4-8",
@@ -91,6 +127,8 @@
       "Repository": "CRAN",
       "Hash": "298fa500d773db0845935cd73bfd9c2e",
       "Requirements": [
+        "KernSmooth",
+        "class",
         "e1071"
       ]
     },
@@ -144,6 +182,7 @@
       "Repository": "CRAN",
       "Hash": "0d776df7577206e100c2c4b508208b10",
       "Requirements": [
+        "class",
         "proxy"
       ]
     },
@@ -156,8 +195,8 @@
       "RemoteUsername": "icra",
       "RemoteRepo": "ediblecity",
       "RemoteRef": "master",
-      "RemoteSha": "d7934cc74bc2b311b23d101c3f3306ac26739549",
-      "Hash": "e40bd11ac6e80de1fd62f725948fccac",
+      "RemoteSha": "2d24c35191d536b807bd2a74b2ee6e5dec6dabfe",
+      "Hash": "579caf3ac64631335a47347d62a9ddf4",
       "Requirements": [
         "dplyr",
         "magrittr",
@@ -221,11 +260,13 @@
       "Repository": "CRAN",
       "Hash": "fd2aab12f54400c6bca43687231e246b",
       "Requirements": [
+        "MASS",
         "cli",
         "glue",
         "gtable",
         "isoband",
         "lifecycle",
+        "mgcv",
         "rlang",
         "scales",
         "tibble",
@@ -320,6 +361,14 @@
       "Hash": "3d5108641f47470611a32d0bdf357a72",
       "Requirements": []
     },
+    "lattice": {
+      "Package": "lattice",
+      "Version": "0.20-45",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b64cdbb2b340437c4ee047a1f4c4377b",
+      "Requirements": []
+    },
     "lifecycle": {
       "Package": "lifecycle",
       "Version": "1.0.3",
@@ -363,6 +412,17 @@
         "rlang"
       ]
     },
+    "mgcv": {
+      "Package": "mgcv",
+      "Version": "1.8-40",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c6b2fdb18cf68ab613bd564363e1ba0d",
+      "Requirements": [
+        "Matrix",
+        "nlme"
+      ]
+    },
     "munsell": {
       "Package": "munsell",
       "Version": "0.5.0",
@@ -371,6 +431,16 @@
       "Hash": "6dfe8bf774944bd5595785e3229d8771",
       "Requirements": [
         "colorspace"
+      ]
+    },
+    "nlme": {
+      "Package": "nlme",
+      "Version": "3.1-157",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dbca60742be0c9eddc5205e5c7ca1f44",
+      "Requirements": [
+        "lattice"
       ]
     },
     "pillar": {
@@ -404,6 +474,17 @@
       "Repository": "CRAN",
       "Hash": "e0ef355c12942cf7a6b91a6cfaea8b3e",
       "Requirements": []
+    },
+    "purrr": {
+      "Package": "purrr",
+      "Version": "0.3.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "54842a2443c76267152eface28d9e90a",
+      "Requirements": [
+        "magrittr",
+        "rlang"
+      ]
     },
     "rappdirs": {
       "Package": "rappdirs",

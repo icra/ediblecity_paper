@@ -24,10 +24,29 @@ library(dplyr)
 library(ediblecity)
 library(knitr)
 library(sf)
+library(purrr)
+library(tidyr)
 
-table <- 0
-figure <- 0
-snippet <- 0
+set.seed(1121)
+
+options(digits = 2)
+
+refs <- c(
+"Table" = 0,
+"Figure" = 0,
+"Code snippet" = 0  
+)
+
+cross_refs <- list()
+
+ref <- function(ref, label = "null"){
+  if(!(ref %in% names(refs))) rlang::abort(paste(ref, "is not in refs"))
+  refs[[ref]] <<- refs[[ref]] + 1
+  cross_refs[[label]] <<- paste(ref, refs[[ref]])
+  paste(ref, refs[[ref]])
+}
+
+
 
 ```
 
@@ -66,15 +85,14 @@ city_example |>
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5),
         axis.text = element_text(size=6))
 
-figure <- figure + 1
 ```
 
-Figure `r figure`: The urban representation included in the `ediblecity` package as example.
+`r ref("Figure", "urban_representation")`: The urban representation included in the `ediblecity` package as example.
 
 
-The package includes the representation of Sant Narcís, a neighbourhood of Girona (Spain) as an example of an urban representation (figure `r figure`). This example can help the users to create the representation of their cities of interest. In `r table = table+1; paste("table", table)` a sample with one element of each type is shown. The representation is provided as an `sf` object, which is a class for spatial data in R implemented by package `sf` [@Pebesma2018]
+The package includes the representation of Sant Narcís, a neighbourhood of Girona (Spain) as an example of an urban representation (`r cross_refs[["urban_representation"]]`). This example can help the users to create the representation of their cities of interest. In the table below, a sample with one element of each type is shown. The representation is provided as an `sf` object, which is a class for spatial data in R implemented by package `sf` [@Pebesma2018]
 
-Table `r table`: Structure of the urban representation example"
+`r ref("Table", "structure")`: Structure of the urban representation example"
 
 ```{r}
 tribble(
@@ -87,13 +105,14 @@ tribble(
   "edible_area", "The surface that is used to grow edible plants. Only applicable to urban agriculture solutions"
 ) |> 
   kable()
+
 ```
 
-Along with the example for a urban representation, the `ediblecity` package also includes a `data.frame` with the general attributes of each green typology in the urban representation used to estimate the indicators (table `r table = table+1; table`). However, the user can provide their own attributes to estimate any indicator. In `city_functions` there are other columns not shown in table `r table`, they are logical variables (i.e. TRUE/FALSE) used internally by the package to select urban agriculture elements.
+Along with the example for a urban representation, the `ediblecity` package also includes a `data.frame` with the general attributes of each green typology in the urban representation used to estimate the indicators (`r ref("Table", "city_functions")`). However, the user can provide their own attributes to estimate any indicator. In `city_functions` there are other columns not shown in table `r cross_refs[["city_functions"]]`, they are logical variables (i.e. TRUE/FALSE) used internally by the package to select urban agriculture elements.
 
-`pGreen` is the proportion of green of the urban element. In urban agriculture solutions, this is overriden by the attribute `edible_area`. The following attributes come in pairs. This is to consider uncertainty in the estimations. The functions use a random value within the range provided by the pair of values for each element in the city. `no2_seq` is the capacity of the element to capture NO~2~ in gr/s. `food` is the food productivity in kg/m^2^ and `CN` is ther curve number, used to calculate infiltration rates [@Cronshey1985].
+`pGreen` is the proportion of green of the urban element. In urban agriculture solutions, this is overriden by the attribute `edible_area`. The following attributes come in pairs. This is to consider uncertainty in the estimations. The functions use a random value within the range provided by the pair of values for each element in the city. `no2_seq` is the capacity of the element to capture NO~2~ in gr/s. `food` is the food productivity in kg/m^2^ and `CN` is their curve number, used to calculate infiltration rates [@Cronshey1985].
 
-Table `r table`: General attributes of the elements of urban green used to estimate the indicators.
+`r cross_refs[["city_functions"]]`: General attributes of the elements of urban green used to estimate the indicators.
 
 ```{r}
 
@@ -103,8 +122,6 @@ city_functions |>
   select(-starts_with("water")) |> 
   kable()
 ```
-
-
 ## Indicators estimated
 
 ### Urban heat island
@@ -121,7 +138,7 @@ The indicator to estimate the urban heat island is implemented by the package un
 
 The function returns by default a summary of statistics of the UHI in `x`. If the argument `return_raster` is set to `TRUE`, the function returns a raster as `stars` object [@Pebesma2021] with the UHI values. If `verbose` is set to `TRUE`, then the function returns a vector (i.e. an array) with the UHI in each cell. Both use the same resolution than `SVF`.
 
-Code snippet `r snippet = snippet+1; snippet`: Function and argumentd to estimate urban heat island.
+`r ref("Code snippet", "uhi")`: Function and arguments to estimate urban heat island.
 
 ```{r uhi_demo, echo=TRUE, eval=FALSE}
 
@@ -159,7 +176,7 @@ where $Rh$ is the potnetial water harvested by the element $i$, calculated as th
 
 The `runoff_prev` function estimates the runoff as well as the total rainfall in `x` and the total rainwater harvested. Along with the urban representation (`x`), the user must provide a `data.frame` with the functions, two columns representing the range of curve numbers and a logical column indicating if the element has potential to harvest rainwater. The argument `rain` allows to set the rain event (in mm). The curve number of each element is randomized within this range. If `runoff_df` is not provided, `city_functions` is used instead. Following, `floors_field` is the name of attribute in `x` that specifies the number of floors of each element; `harvest_dist` is the maximum distance to consider that a building is adjacent to the element; and `tank_size` is a range for the volume of the rainwater tank (in m^3^). The volume of each tank in the city is randomized within this range.
 
-Code snippet `r snippet = snippet+1;snippet`: Function and arguments to estimate runoff prevention
+`r ref("Code snippet", "runoff")`: Function and arguments to estimate runoff prevention
 ```{r runoff_demo, eval=FALSE, echo=TRUE}
 
 runoff_prev(
@@ -180,7 +197,7 @@ If `percent_out` is set to `TRUE`, the function return the percentage of houses 
 
 Finally, if `verbose` argument is set to `TRUE`, a vector with all distances is returned.
 
-Code snippet `r snippet = snippet+1;snippet`: Function and arguments to calculate green accessibility
+`r ref("Code snippet", "green")`: Function and arguments to calculate green accessibility
 ```{r, eval=FALSE, echo=TRUE}
 
 green_distance(
@@ -215,11 +232,9 @@ The function to estimate the NO~2~ sequestered is `no2_seq`. It has only two arg
 - `pGreen`: The proportion of green surface in each function.
 
 
-`r snippet = snippet+1`
+The capacity ($cap_i$ in the previous equation) of each element is randomized within the range provided by `no2_seq1` and `no2_seq2`. As well the area of each element is multiplied by `pGreen`. In urban agriculture solutions, the attribute `edible_area` overrides the more general `pGreen`.
 
-The capacity ($cap_i$ in equation `snippet`) of each element is randomized within the range provided by `no2_seq1` and `no2_seq2`. As well the area of each element is multiplied by `pGreen`. In urban agriculture solutions, the attribute `edible_area` overrides the more general `pGreen`.
-
-Code snippet `r snippet`: Function and arguments to calculate NO~2~ sequestration
+`r ref("Code snippet")`: Function and arguments to calculate NO~2~ sequestration
 ```{r no2_demo, echo=TRUE, eval=FALSE}
 
 no2_seq(x, green_df = NULL)
@@ -234,12 +249,232 @@ There are two indicators that are closely related. They regard to hours of work.
 jobs | volunteers = \sum_{i=1}^{N}a_i \times k
 \end{align}
 
-where $a_i$ is the area in m^2^ used to grow plants (`edible_area`) in the element $i$; and $k$ is the number of jobs or volunteers by m^2^. In both functions, $k$ is randomized within a range
+where $a_i$ is the area in m^2^ used to grow plants (`edible_area`) in the element $i$; and $k$ is the number of jobs or volunteers by m^2^. In both functions, $k$ is randomized within a range and a Monte Carlo simulation of 1,000 iterations is executed to estimate the confidence interval.
+
+The functions to calculate these indicators are `edible_jobs` and `volunteer_jobs` respectively. They share the same arguments, expect for `jobs` and `volunteers`, which is the value of $k$ in the previous equation. As usual, the first argument is the urban representation (`x`), the attribute of `x` defining the area used to grow plants is `are_col`, the confidence interval is defined in `interval`, and if `verbose` is set to `TRUE`, instead of the confidence interval, the function return a vector of length 1,000 with all the results of the Monte Carlo simulation.
+
+`r ref("Code snippet")`: Function and arguments to calculate number of jobs created and volunteers involved in urban agriculture.
+
+```{r, echo=TRUE, eval=FALSE}
+
+edible_jobs(
+  x,
+  jobs = c(0.000163, 0.022),
+  edible = NULL,
+  area_col = "edible_area",
+  interval = 0.95,
+  verbose = FALSE
+)
+
+edible_volunteers(
+  x,
+  volunteers = c(0.00163, 0.22),
+  edible = NULL,
+  area_col = "edible_area",
+  interval = 0.95,
+  verbose = FALSE
+)
+
+```
 
 
+### Green per capita
 
+With this indicator, we had the goal to go beyond a simple account of green per capita and consider also some ingredients of environmental justice [@Kabisch2014c]. Therefore, the indicator is able to measure the green per capita at neighbourhood level (if neighbourhoods are provided) and it has a shorthand to calculate the ratio between the most and least green neighbourhoods. Moreover, since wealthier areas tend to have more private gardens [@Farahani2018], these can be included in the account of green per capita to not understimate green per capita in those neighbourhoods.
+
+The function to calculate this indicator is `green_capita`. Along with the urban representation (`x`). As in other functions, `green_categories` is a list of the categories to consider as green areas. To calculate the green per capita in the overall city, the user must provide the number of inhabitants in `inhabitants`. There are two options to calculate green per capita at a neighbourhood level. The urban representation can contain two columns indicating the neighbourhoods and the inhabitants on that, passed to `name_col` and `inh_col` respectively. Or the user can provide a layer with the neighbourhoods boundaries with the previous attributes indicated in the same arguments as previous.
+
+Furthermore, when the `private` argument is set to `TRUE`, the private gardens are also considered. Alternatively, the user can provide a list of elements to be considered as private green areas. When the argument `verbose` is set to `TRUE`, the function returns the green per capita in each neighbourhoods instead of the ratio between the most and least green ones. Finally, the argument `min_inh` is to exclude neighbourhoods whose number of inhabitants is under a threshold to avoid the bias in green per capita due to unpopulated neighbourhoods (e.g. industrial districts).
+
+`r ref("Code snippet")`: Function and arguments to calculate green per capita.
+
+```{r, echo=TRUE, eval=FALSE}
+
+green_capita(
+  x,
+  green_categories = NULL,
+  inhabitants = NULL,
+  neighbourhoods = NULL,
+  name_col = NULL,
+  inh_col = NULL,
+  private = FALSE,
+  verbose = FALSE,
+  min_inh = 0
+)
+
+```
+
+### Food production
+
+Although many authors stated that the main goal of urban agriculture is not to produce food [@Saumel2019; @Tornaghi2012c], food production is undoubtedly and important component of urban gardens [@Furness2018; @Steel2008] and the most frequent output modeled at a city scale [@Grafius2020; @Grewal2012]. The food production is measured in terms of productivity:
+
+\begin{align}
+Food \; production = \sum_{i=1}^{N} \times y_k \times a_i
+\end{align}
+
+where $y_k$ is the yield (in $kg/m^2$) of the category $k$ of urban garden; and $a_i$ is the area of urban garden $i$ in $m^2$. By default, the value of $y$ is randomized using the range defined by `food1` and `food2` columns in `city_functions`. The function computes a Monte Carlo simulation of 1000 iterations to calculate the confidence interval.
+
+The function that calculates the food production is `food_production`. It takes the urban representation (`x`) as the first argument. If the second argument `edible_df` is `NULL`, the function uses the values from `city_functions` as specified above. Otherwise, the user can provide its own values as a `data.frame` with three columns: 
+- `functions`: specifying the category of urban agriculture, it should match the categories from `x`.
+- `food1` and `food2` specifies the range within the yield is randomized.
+
+The argument `area_col` indicates which attribute of `x` determines the area dedicated to grow plants in each element. If `NULL`, the total area of each element is used instead. The number passed to `interval` defines which confidence must be returned by the function. However, if `verbose` is set to `TRUE`, the function returns a vector of length 1,000 with the results of each iteration of the Monte Carlo simulation. 
+
+`r ref("Code snippet")`: Function and arguments to estimate food production
+
+```{r, echo=TRUE, eval=FALSE}
+
+food_production(
+  x,
+  edible_df = NULL,
+  area_col = "edible_area",
+  interval = 0.95,
+  verbose = FALSE
+)
+
+```
+
+## Scenarios of urban agriculture
+
+The `ediblecity` package also provides the user with a function to create new scenarios based on the urban representation and a predefined set of urban agriculture solutions (`r ref("Table", "scenarios")`) based on where they are located (private gardens, plots on ground or rooftops) and their purpose (private, community or commercial). The function returns a spatial representation of the new scenario (`sf` object) with the same structure of the urban representation.
+
+`r cross_refs[["scenarios"]]`: Elements created in new scenarios.
+
+```{r}
+
+tibble(
+  `Urban agriculture solutions` = city_functions$functions[1:5],
+  Location = c("Private gardens", rep("Plots on ground", 2), rep("Rooftops", 2)),
+  Purpose = c("Private", rep("Community", 2), rep("Commercial", 2))
+) |> 
+  kable()
+
+```
+The location of new urban agriculture elements is randomized among all locations that fulfill the requirements of minimum area for that element. However, this is not the case for commercial gardens, they are settled in the larger available locations, assuming that commercial initiatives have the power to acquire the best spots.
+
+The function to create a new scenario is called `set_scenario`. It requires many arguments but most of them have default values to facilitate its use. The function needs the urban representation (`x`). Then three arguments (`pGardens`, `pVacant`, `pRooftop`) control the proportion of new elements that must be created. The next three arguments (`edible_area_*`) control the proportion of the area of the new elements that is dedicated to grow plants (`edible_area`). The `edible_area` of each new elements is randomized within the range provided in the arguments. The next trio of arguments (`min_area_*`) specify the minimal area required to create new elements. If there are not enough elements largen than `min_area_*` to fulfill the first arguments, a message is displayed to inform the user (unless `quiet` argument is set to `TRUE`. Another three arguments (`*_from`) control which elements can be converted from the urban representation to create new urban agriculture solutions. The argument `pcommercial` controls the percentage of plots on ground and rooftop that should have commercial purposes instead of community. This does not affect private gardens since they are assumed to be for personal use. Finally, `area_field` specifies which attribute of `x` must be used as the area of the elements. By default, it is am attribute called `flat_area` that measures the area with an slope lower than 5º (in `city_example`).
+
+`r ref("Code snippet")`: Function and arguments to create new scenarios.
+
+```{r, echo=TRUE, eval=FALSE}
+
+set_scenario(
+  x,
+  pGardens = 1,
+  pVacant = 1,
+  pRooftop = 1,
+  edible_area_garden = c(0.02, 0.3),
+  edible_area_vacant = c(0.52, 0.75),
+  edible_area_rooftop = c(0.6, 0.62),
+  min_area_garden = 10,
+  min_area_vacant = 100,
+  min_area_rooftop = 100,
+  private_gardens_from = "Normal garden",
+  vacant_from = "Vacant",
+  rooftop_from = "Rooftop",
+  pCommercial = 0,
+  area_field = "flat_area",
+  quiet = FALSE
+)
+
+```
 
 # Use cases
+
+To our understanding, the most important use case of the `ediblecity` package is to compare scenarios. To illustrate this, we will create two scenarios and compare them with the original `city_example`. The package has been designed to work well with the `tidyverse` framework in `R` [@Wickham2019], especially, with the `map_*` family in the `purrr` package [@Henry2022]. Therefore, we first create the two scenarios and save them in a list along with the original urban representation, which we called `s0` (`r ref("Code snippet", "use_set_scenario")`). The scenario `s1` will convert the 50% of elements to urban agriculture solutions while the scenario `s2` will convert the 100%. Half of gardens in vacant plots, streets and rooftop will have commercial purposes.
+
+```{r, include=FALSE}
+
+opts_chunk$set(echo = TRUE, collapse = TRUE, comment = "#>")
+
+```
+
+
+`r cross_refs[["use_set_scenario"]]`: Code to create the scenarios.
+
+```{r}
+
+# Create new scenarios
+scenarios <- map(c(0.5, 1), ~set_scenario(city_example, 
+                             pGardens = .x,
+                             pVacant = .x,
+                             pRooftop = .x,
+                             private_gardens_from = "Normal garden",
+                             vacant_from = c("Vacant", "Streets"),
+                             rooftop_from = "Rooftop",
+                             pCommercial = 0.5))
+
+# Add city_example as s0
+scenarios[[3]] <- city_example
+
+# Name the scenarios
+names(scenarios) <- c("s1", "s2", "s0")
+```
+
+`r ref("Table", "count_scenarios")` shows the number of agriculture solutions in each scenario.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+counting <- function(x, .name){
+  x |> 
+    st_drop_geometry() |> 
+    filter(Function %in% city_functions$functions[1:5]) |> 
+    count(Function, name = .name)
+}
+
+counting(scenarios[[3]], "s0") |> 
+  full_join(counting(scenarios[[1]], "s1")) |> 
+  full_join(counting(scenarios[[2]], "s2")) |> 
+  mutate(across(where(is.numeric), ~if_else(is.na(.x), 0L, .x))) |> 
+  kable()
+```
+
+## Calculate indicators and compare scenarios
+
+In this section, we will calculate the indicators for each scenario and create tables or plots as illustration of how the results can be used.
+
+`r ref("Code snippet")`: Code to create a table with the result of urban heat island in all three scenarios.
+
+```{r, warning=FALSE, message=FALSE}
+
+# We use the SVF object that is provided for the city_example in the package
+map_dfr(scenarios, UHI, SVF = ediblecity::SVF) |> 
+  mutate(Scenario = names(scenarios), .before = 1) |> 
+  kable()
+
+```
+
+As expected the second scenario (`s2`) has the lowest values for urban heat island, but no too far from the scenario `s1`. Both present a reduction of approximated 50% in urban heat island regarding the base scenario.
+
+`r ref("Code snippet")`: Code to calculte the runoff prevention in each scenario.
+
+```{r}
+
+map_dfr(scenarios, runoff_prev) |> 
+  mutate(scenario = names(scenarios), .before = 1) |> 
+  kable()
+
+```
+
+The total rainfall presented the same value in all scenarios because we use the same rain event and all scenarios represent the same total area. As urban agriculture becomes more present, the amount of rainwater harvested increases. However, runoff is not clearly influenced by urban agriculture because other green elements presents equal or even larger infiltration rates [@Clinton2018].
+
+`r ref("Code snippet")`: Code to generate a boxplot of distances to public green areas.
+
+```{r}
+
+map_dfc(scenarios, green_distance, min_area = 100, verbose = TRUE) |> 
+  pivot_longer(everything()) |> 
+  ggplot(aes(x=name, y=as.numeric(value), fill=name))+
+  geom_boxplot(show.legend = FALSE)+
+  labs(fill="Scenario", x= "Scenario", y="Distance from residences to public green areas")
+
+```
+
+`r ref("Figure")`: Comparison among scenarios of the distances to each residences to its closest public green area
+
+
+
+
 
 # Conclusion
 
