@@ -104,15 +104,16 @@ city_example |>
         axis.text = element_text(size=6))
 
 ```
+\begin{center}
 
 `r ref("Figure", "urban_representation")`: The urban representation included in the `ediblecity` package as example.
 
+\end{center}
 
 The package includes the representation of Sant Narcís, a neighbourhood of Girona (Spain) as an example of an urban representation (`r cross_refs[["urban_representation"]]`). This example can help the users to create the representation of their cities of interest. In the table below, a sample with one element of each type is shown. The representation is provided as an `sf` object, which is a class for spatial data in R implemented by package `sf` [@Pebesma2018]
 
-`r ref("Table", "structure")`: Structure of the urban representation example"
-
 ```{r}
+
 tribble(
   ~Column, ~Description,
   "Function", "A category representing the urban elements",
@@ -122,15 +123,13 @@ tribble(
   "flat_area", "The surface of the element that is flat (slope < 5º)",
   "edible_area", "The surface that is used to grow edible plants. Only applicable to urban agriculture solutions"
 ) |> 
-  kable()
+  kable(caption = "Structure of the urban representation example")
 
 ```
 
-Along with the example for a urban representation, the `ediblecity` package also includes a `data.frame` with the general attributes of each green typology in the urban representation used to estimate the indicators (`r ref("Table", "city_functions")`). However, the user can provide their own attributes to estimate any indicator. In `city_functions` there are other columns not shown in table `r cross_refs[["city_functions"]]`, they are logical variables (i.e. TRUE/FALSE) used internally by the package to select urban agriculture elements.
+Along with the example for a urban representation, the `ediblecity` package also includes a `data.frame` with the general attributes of each green typology in the urban representation used to estimate the indicators (Table 2). However, the user can provide their own attributes to estimate any indicator. In `city_functions` there are other columns not shown in table `r cross_refs[["city_functions"]]`, they are logical variables (i.e. TRUE/FALSE) used internally by the package to select urban agriculture elements.
 
 `pGreen` is the proportion of green of the urban element. In urban agriculture solutions, this is overriden by the attribute `edible_area`. The following attributes come in pairs. This is to consider uncertainty in the estimations. The functions use a random value within the range provided by the pair of values for each element in the city. `no2_seq` is the capacity of the element to capture NO~2~ in gr/s. `food` is the food productivity in kg/m^2^ and `CN` is their curve number, used to calculate infiltration rates [@Cronshey1985].
-
-`r cross_refs[["city_functions"]]`: General attributes of the elements of urban green used to estimate the indicators.
 
 ```{r}
 
@@ -138,7 +137,7 @@ city_functions |>
   select(-starts_with("...")) |> 
   select(-edible, -public, -jobs, -volunteers, -location) |>
   select(-starts_with("water")) |> 
-  kable()
+  kable(caption = "General attributes of the elements of urban green used to estimate the indicators")
 ```
 ### Indicators estimated
 
@@ -354,9 +353,7 @@ food_production(
 
 ### Scenarios of urban agriculture
 
-The `ediblecity` package also provides the user with a function to create new scenarios based on the urban representation and a predefined set of urban agriculture solutions (`r ref("Table", "scenarios")`) based on where they are located (private gardens, plots on ground or rooftops) and their purpose (private, community or commercial). The function returns a spatial representation of the new scenario (`sf` object) with the same structure of the urban representation.
-
-`r cross_refs[["scenarios"]]`: Elements created in new scenarios.
+The `ediblecity` package also provides the user with a function to create new scenarios based on the urban representation and a predefined set of urban agriculture solutions (Table 3) based on where they are located (private gardens, plots on ground or rooftops) and their purpose (private, community or commercial). The function returns a spatial representation of the new scenario (`sf` object) with the same structure of the urban representation.
 
 ```{r}
 
@@ -365,7 +362,7 @@ tibble(
   Location = c("Private gardens", rep("Plots on ground", 2), rep("Rooftops", 2)),
   Purpose = c("Private", rep("Community", 2), rep("Commercial", 2))
 ) |> 
-  kable()
+  kable(caption = "Elements created in new scenarios")
 
 ```
 The location of new urban agriculture elements is randomized among all locations that fulfill the requirements of minimum area for that element. However, this is not the case for commercial gardens, they are settled in the larger available locations, assuming that commercial initiatives have the power to acquire the best spots.
@@ -467,25 +464,26 @@ names(scenarios) <- c("s1", "s2", "s0")
 scenarios <- scenarios[order(names(scenarios))]
 ```
 
-`r ref("Table", "count_scenarios")` shows the number of agriculture solutions in each scenario.
-
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 
 counting <- function(x, .name){
   x |> 
     st_drop_geometry() |> 
     filter(Function %in% city_functions$functions[1:5]) |> 
-    count(Function, name = .name)
+    group_by(Function) |> 
+    summarize(!!sym(paste(.name, "n")) := n(),
+              !!sym(paste(.name, "area")) := sum(area))
 }
 
 counting(scenarios[[1]], "s0") |> 
   full_join(counting(scenarios[[2]], "s1")) |> 
   full_join(counting(scenarios[[3]], "s2")) |> 
   mutate(across(where(is.numeric), ~if_else(is.na(.x), 0L, .x))) |> 
-  kable()
+  relocate(Function, ends_with("n"), ends_with("area")) |> 
+  kable(caption = "Number of agriculture solutions in each scenario and their surfaces")
 ```
 
-## Calculate indicators to compare scenarios
+## Calculate indicators and compare scenarios
 
 In this section, we will calculate the indicators for each scenario and create tables or plots as illustration of how the results can be used.
 
@@ -495,7 +493,7 @@ In this section, we will calculate the indicators for each scenario and create t
 
 # We use the SVF object that is provided for the city_example in the package
 map_dfr(scenarios, UHI, SVF = ediblecity::SVF, .id = "Scenario") |> 
-  kable()
+  kable(caption = "Summary statistic of urban heat island effect in each scenario")
 
 ```
 
@@ -503,15 +501,15 @@ As expected the second scenario (`s2`) has the lowest values for urban heat isla
 
 ```{r, include=FALSE, eval = FALSE}
 
-# plot <- map(scenarios, ~ UHI(.x, SVF = ediblecity::SVF, return_raster = TRUE), .id = "Scenarios") |> 
+# map(scenarios, ~ UHI(.x, SVF = ediblecity::SVF, return_raster = TRUE), .id = "Scenarios") |>
 #   map(~ ggplot()+
-#         stars::geom_stars(data = .x)+
+#         stars::geom_stars(data = .x, na.action = na.omit)+
 #         coord_equal()+
 #         scale_fill_distiller(palette = "RdYlBu")+
 #         theme_void()+
 #         theme(plot.title = element_text(hjust=0.5))
-#       ) |> 
-#   map2(names(scenarios), ~ .x+labs(title = .y)) |> 
+#       ) |>
+#   map2(names(scenarios), ~ .x+labs(title = .y)) |>
 #   wrap_plots()+plot_layout(guides = 'auto', nrow = 1)
 # 
 # ggsave("assets/UHI_plots.png")
@@ -526,7 +524,7 @@ As expected the second scenario (`s2`) has the lowest values for urban heat isla
 ```{r}
 
 map_dfr(scenarios, runoff_prev, .id="scenario") |> 
-  kable()
+  kable(caption = "Runoff, total rainfall and rainwater harvested in each scenario")
 
 ```
 
@@ -534,7 +532,7 @@ The total rainfall presented the same value in all scenarios because we use the 
 
 `r ref("Code snippet")`: Code to generate a boxplot of distances to public green areas.
 
-```{r}
+```{r, fig.height=3}
 
 map_dfc(scenarios, green_distance, min_area = 100, verbose = TRUE) |> 
   pivot_longer(everything()) |> 
@@ -551,7 +549,7 @@ map_dfc(scenarios, green_distance, min_area = 100, verbose = TRUE) |>
 ```{r}
 
 map_dfr(scenarios, no2_seq, .id="Scenario") |> 
-  kable()
+  kable(caption = "Sequestration of nitrogen dioxide in each scenario")
 ```
 
 Regarding the capacity to absorb NO~2~, we see a significant improvement from base scenario to scenario 1 but not as larger from scenario 1 to scenario 2.
@@ -560,7 +558,7 @@ In the `r ref("Code snippet", "use_jobs")`, there is an example in job to calcul
 
 `r cross_refs[["use_jobs"]]`: Code to estimate jobs and volunteers in each scenario.
 
-```{r}
+```{r, fig.height=3}
 
 jobs <- scenarios |> 
   map_dfc(edible_jobs, verbose = TRUE) |> 
@@ -585,7 +583,7 @@ Below, we calculate the green per capita in each neighborhoods. To do so, we use
 
 `r ref("Code snippet")`: Code to calculate the green per capita in each neighborhood 
 
-```{r}
+```{r, fig.height=3}
 
 scenarios |> 
   map_dfr(green_capita, 
@@ -613,7 +611,7 @@ The last, but not least, indicator provided by the `ediblecity` package is the f
 scenarios |> 
   map_dfr(food_production, .id = "Scenario") |> 
   mutate(across(where(is.numeric), ~ .x/1000)) |> 
-  kable()
+  kable(caption = "Food production in Tm/year in each scenario")
 
 ```
 
@@ -647,8 +645,8 @@ No competing interests were disclosed.
 
 Authors acknowledge the support from the European Union Horizon 2020 innovation & action project EdiCitNet (GA776665), the Economy and Knowledge Department of the Catalan Government through Consolidated Research Groups ICRA-ENV 2017 SGR 1124 and 2017 SGR 1318, and the CERCA program. 
 
-## Acknowledgements
+## Acknowledgements {.unnumbered}
 
-`r stop("add acknowledgements to R commnunity")`
+We want to aknowledge the `R` community for being so supportive and friendly in StackOverflow, but also in Twitter and Mastodon under the hashtag #Rstats. Also, to Hadley Wickham and his team, for all the tools that make the life easier to R developers. Likewise, we want to thank all R developers that altruistically spend their time in building open-source packages.
 
 # References {.unnumbered}
