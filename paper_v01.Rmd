@@ -493,18 +493,18 @@ As expected the second scenario (`s2`) has the lowest values for urban heat isla
 
 ```{r, include=FALSE, eval = FALSE}
 
-# map(scenarios, ~ UHI(.x, SVF = ediblecity::SVF, return_raster = TRUE), .id = "Scenarios") |>
-#   map(~ ggplot()+
-#         stars::geom_stars(data = .x, na.action = na.omit)+
-#         coord_equal()+
-#         scale_fill_distiller(palette = "RdYlBu")+
-#         theme_void()+
-#         theme(plot.title = element_text(hjust=0.5))
-#       ) |>
-#   map2(names(scenarios), ~ .x+labs(title = .y)) |>
-#   wrap_plots()+plot_layout(guides = 'auto', nrow = 1)
-# 
-# ggsave("assets/UHI_plots.png")
+map(scenarios, ~ UHI(.x, SVF = ediblecity::SVF, return_raster = TRUE), .id = "Scenarios") |>
+  map(~ ggplot()+
+        stars::geom_stars(data = .x, na.action = na.omit)+
+        coord_equal()+
+        scale_fill_distiller(palette = "RdYlBu")+
+        theme_void()+
+        theme(plot.title = element_text(hjust=0.5))
+      ) |>
+  map2(names(scenarios), ~ .x+labs(title = .y)) |>
+  wrap_plots()+plot_layout(guides = 'auto', nrow = 1)
+
+ggsave("assets/UHI_plots.png")
 
 ```
 

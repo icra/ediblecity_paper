@@ -1,0 +1,36 @@
+REVIEWER 3
+
+Why the authors choose these specific indicators?
+I would definitely agree with a justification saying that this is a first shot at a wide framework that aims to increase the number of indicators in the future, either from the authors' or other contributors' side.
+
+ some additional explanation on the usability of the obtained scores would also be interesting, probably compared to potential situations. For example, the food production indicator yields a kg/m2 value, but how should this value be used? Should the reader compare it to the surrounding peri-urban/rural production? The comparison between urban agriculture neighbours and cities is well covered by the Use Cases.
+
+Problema projecció SVF
+
+It would be interesting to provide a code snippet with the package dependencies to copy-paste it into R and get the packages up and running fast.
+
+
+ Implementation: the model under the package: Why only dplyr is listed as package dependency when other packages from the tidyverse package collection are used in the Use Cases section? Do you consider that Use Cases is not an explicit part of the package?
+
+Statement in page 7: “The following attributes come in pairs (min, max) to consider uncertainty in the estimations. The functions use a random value within the range provided by the pair of values for each element in the city”. Does the function pick a random value within the range considering the probability of occurrence (a value that appears more in the distribution is more likely to be picked), or just a random value (all values within the range have the same probability of being picked)?
+
+REVIEWER 2
+Més urban gardening a l’introducció
+https://www.sciencedirect.com/science/article/abs/pii/S2210670722006679?via%3Dihub
+
+Afegir risks of urban agricultura
+
+Explicar que l’eina és agnóstica, depèn totalmente dels paràmetres entrats per l’usuari.
+Tots els models están malament, però alguns son útils. És una primera aproximació -> podem afegir-ho a algún lloc.
+
+Highlight where to get the data
+
+REVIEWER 1
+Més urban gardening a l’introducció
+Més interpretación dels resultats
+Selecció dels indicadors
+Transferability
+
+
+
+
